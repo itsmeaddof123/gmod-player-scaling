@@ -1,25 +1,25 @@
 --- File Loader for Player Scaling by Addi ---
 
--- Shared files
-for k, v in pairs(file.Find("quickbinds/sh_*", "LUA")) do
+--[[-- Shared files
+for k, v in pairs(file.Find("playerscaling/sh_*", "LUA")) do
     if (SERVER) then
-        AddCSLuaFile("quickbinds/" .. tostring(v))
+        AddCSLuaFile("playerscaling/" .. tostring(v))
     end
-    include("quickbinds/" .. tostring(v))
-end
+    include("playerscaling/" .. tostring(v))
+end--]]
 
 -- Server files
 if (SERVER) then
-    for k, v in pairs(file.Find("quickbinds/sv_*", "LUA")) do
-        include("quickbinds/" .. tostring(v))
+    for k, v in pairs(file.Find("playerscaling/sv_*", "LUA")) do
+        include("playerscaling/" .. tostring(v))
     end
 end
 
--- Main client files
-for k, v in pairs(file.Find("quickbinds/cl_*", "LUA")) do
+--[[-- Main client files
+for k, v in pairs(file.Find("playerscaling/cl_*", "LUA")) do
     if (SERVER) then
-        AddCSLuaFile("quickbinds/" .. tostring(v))
+        AddCSLuaFile("playerscaling/" .. tostring(v))
     else
-        include("quickbinds/" .. tostring(v))
+        include("playerscaling/" .. tostring(v))
     end
-end
+end--]]
