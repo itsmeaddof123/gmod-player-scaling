@@ -1,12 +1,12 @@
---- File Loader for Player Scaling by Addi ---
+--[[File Loader for Player Scaling by Addi--]]
 
---[[-- Shared files
+-- Shared files
 for k, v in pairs(file.Find("playerscaling/sh_*", "LUA")) do
     if (SERVER) then
         AddCSLuaFile("playerscaling/" .. tostring(v))
     end
     include("playerscaling/" .. tostring(v))
-end--]]
+end
 
 -- Server files
 if (SERVER) then
@@ -15,11 +15,11 @@ if (SERVER) then
     end
 end
 
---[[-- Main client files
+-- Main client files
 for k, v in pairs(file.Find("playerscaling/cl_*", "LUA")) do
     if (SERVER) then
         AddCSLuaFile("playerscaling/" .. tostring(v))
     else
         include("playerscaling/" .. tostring(v))
     end
-end--]]
+end

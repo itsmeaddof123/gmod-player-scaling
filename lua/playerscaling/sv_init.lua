@@ -1,107 +1,142 @@
- -- Communicates scaling to players
-util.AddNetworkString("playerscaling_set")
+--[[This file contains serverside functions
+    See lua/sh_init.lua to configure advanced addon settings
+    playerscaling.setscale is the function you can use to scale players in code--]]
 
-playerscaling = playerscaling or {}
-playerscaling.players = playerscaling.players or {}
+playerscaling.lerp = playerscaling.lerp or {}
 
-local playerscaling_death = CreateConVar("playerscaling_death", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling reset on death by default?", 0, 1)
-local playerscaling_eyes = CreateConVar("playerscaling_eyes", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player eyes by default?", 0, 1)
-local playerscaling_speed = CreateConVar("playerscaling_speed", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player speed by default?", 0, 1)
-local playerscaling_jump = CreateConVar("playerscaling_jump", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player jump by default?", 0, 1)
+-- Communicates scaling to players
+util.AddNetworkString("playerscaling")
 
 -- Player command to scale themselves
-concommand.Add("playerscale_me", function(ply, cmd, args)
-    playerscaling.setscale(ply, unpack(args))
-end, nil, "Set a scale from 0.05 to 10. Other arguments are true/false for (in order): death reset, scale eyes, scale speed, scale jump")
+concommand.Add("playerscale", function(ply, cmd, args)
+    --TODO(itsmeaddof123) Possibly, add a usergroup confirmation
+    ply:ChatPrint(playerscaling.setscale(ply, unpack(args)))
+end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/false for scale speed, scale jump")
 
--- Sets player scale. You can use this function when scaling players via code.
-function playerscaling.setscale(ply, scale, dodeath, doeyes, dospeed, dojump)
-    if (not IsValid(ply)) then
-        return
-    end
-    
-    -- Resets player scale
-    playerscaling.resetscale(ply)
-
-    -- Gets scale and returns if only reset
-    scale = math.Clamp(scale or 1, 0.05, 10)
-    if (scale == 1) then
-        return
-    end
-
-    -- Overrides for default values
-    dodeath = dodeath or playerscaling_death:GetBool()
-    doeyes = doeyes or playerscaling_eyes:GetBool()
-    dospeed = dospeed or playerscaling_speed:GetBool()
-    dojump = dojump or playerscaling_jump:GetBool()
-
-    -- Initializes saved scaling values
-    playerscaling.players[ply] = {}
-
-    -- Scales player
-    ply:SetModelScale(scale)
-    playerscaling.players[ply].Scale = scale
-
-    -- Scales eyes
-    if (doeyes) then
-        ply:SetViewOffset(ply:GetViewOffset() * scale)
-        ply:SetViewOffsetDucked(ply:GetViewOffsetDucked() * scale)
-        playerscaling.players[ply].Eyes = true
-    end
-
-    -- Scales speed
-    if (dospeed) then
-        --TODO(itsmeaddof123) Custom speed scale
-        ply:SetCrouchedWalkSpeed(ply:GetCrouchedWalkSpeed() * scale)
-        ply:SetSlowWalkSpeed(ply:GetSlowWalkSpeed() * scale)
-        ply:SetWalkSpeed(ply:GetWalkSpeed() * scale)
-        ply:SetMaxSpeed(ply:GetMaxSpeed() * scale)
-        ply:SetRunSpeed(ply:GetRunSpeed() * scale)
-        playerscaling.players[ply].Speed = true
-    end
-
-    -- Scales jump
-    if (dojump) then
-        --TODO(itsmeaddof123) Custom jump scale
-        ply:SetJumpPower(ply:GetJumpPower() * scale)
-        playerscaling.players[ply].Jump = true
+-- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion
+local function getspeedmult(scale)
+    if (scale > 1) then -- Speeds players up less
+        return scale + (scale - 1) * math.Clamp(playerscaling.speedmultlarge, 0, 1)
+    else -- Slows players less
+        return 1 - (1 - scale) * math.Clamp(playerscaling.speedmultsmall, 0, 1)
     end
 end
 
--- Resets player scale. 
-function playerscaling.resetscale(ply)
+-- Scaling size to jump 1:1 doesn't feel natural, so here's a custom conversion
+local function getjumpmult(scale)
+    if (scale > 1) then -- Upward jump scaling seems fine so far
+        return scale + (scale - 1) * math.Clamp(playerscaling.jumpmultlarge, 0, 1)
+    else -- Lowers jump power less
+        return 1 - (1 - scale) * math.Clamp(playerscaling.jumpmultsmall, 0, 1)
+    end
+end
+
+-- Sets player scale. You can use this function when scaling players via code.
+function playerscaling.setscale(ply, scale, dospeed, dojump)
+    if (not IsValid(ply)) then
+        return "Failed to scale: Invalid player"
+    end
+
+    -- Return if already scaling
+    if (playerscaling.lerp[ply]) then
+        return "Failed to scale: Already scaling"
+    end
+    
+    -- Get old scale values if there are any
+    local old = table.Copy(playerscaling.players[ply]) or {
+        scale = 1,
+        speed = false,
+        jump = false,
+        view = false,
+    }
+
+    -- Overrides for default values
+    dospeed = tobool(dospeed) or GetConVar("playerscaling_speed"):GetBool()
+    dojump = tobool(dojump) or GetConVar("playerscaling_jump"):GetBool()
+    local doview = playerscaling.doview
+
+    -- Gets scale and returns if there are no changes
+    scale = math.Clamp(scale or 1, playerscaling.minimumsize, playerscaling.maximumsize)
+    if (old.scale == scale and old.speed == dospeed and old.jump == dojump and old.view == playerscaling.doview) then
+        return "Failed to scale: Values unchanged"
+    end
+
+    -- Prepare scales. Divides the new scale by the old scale so that we can Lerp straight from the current scale to the target scale without having to reset to 1 first.
+    local speedscale = (dospeed and getspeedmult(scale) or 1) / (old.speed and getspeedmult(old.scale) or 1)
+    local jumpscale = (dojump and getjumpmult(scale) or 1) / (old.jump and getjumpmult(old.scale) or 1)
+    local viewscale = (doview and scale or 1) / (old.view and old.scale or 1)
+
+    -- Sets up the lerp
+    local ratio = math.Clamp(old.scale > scale and old.scale / scale or scale / old.scale, 0.1, 5)
+    local length = math.max(GetConVar("playerscaling_time"):GetFloat(), 0)
+    
+    -- Overrides timing if player is dead
+    if (not ply:Alive()) then
+        length = 0
+    end
+
+    -- Saves the new scale information
+    playerscaling.players[ply] = {
+        scale = oldscale
+        speed = dospeed,
+        jump = dojump,
+        view = doview,
+    }
+
+    playerscaling.lerp[ply] = {
+        -- Lerp details
+        starttime = CurTime(),
+        endtime = CurTime() + length,
+        speed = dospeed,
+        jump = dojump,
+        view = doview,
+
+        -- Prepare old values for the Lerp
+        oldscale = old.scale,
+        oldwalkspeed = ply:GetWalkSpeed(),
+        oldrunspeed = ply:GetRunSpeed(),
+        oldslowspeed = ply:GetSlowWalkSpeed(),
+        oldmaxspeed = ply:GetMaxSpeed(),
+        oldjump = ply:GetJumpPower(),
+        oldview = ply:GetViewOffset(),
+        oldviewducked = ply:GetViewOffsetDucked(),
+
+        -- Prepare new values for the Lerp
+        newscale = scale,
+        newwalkspeed = ply:GetWalkSpeed() * speedscale,
+        newrunspeed = ply:GetRunSpeed() * speedscale,
+        newslowspeed = ply:GetSlowWalkSpeed() * speedscale,
+        newmaxspeed = ply:GetMaxSpeed() * speedscale,
+        newjump = ply:GetJumpPower() * jumpscale,
+        newview = ply:GetViewOffset() * viewscale,
+        newviewducked = ply:GetViewOffsetDucked() * viewscale,
+    }
+
+    -- Sends the player the updated scale
+    net.Start("playerscaling")
+        net.WriteFloat(scale)
+        net.WriteFloat(length)
+    net.Send(ply)
+end
+
+-- Resets scaling on marked players on death
+hook.Add("PlayerDeath", "playerscaling_death", function(ply, inf, att)
+    if (not IsValid(ply) or not playerscaling.players[ply] or not GetConVar("playerscaling_death"):GetBool()) then
+        return
+    end
+
+    playerscaling.setscale(ply, 1)
+end)
+
+-- Negates fall damage for scaled up players
+hook.Add("GetFallDamage", "playerscaling_fall", function(ply, speed)
     if (not IsValid(ply) or not playerscaling.players[ply]) then
         return
     end
 
-    -- Resets scale
-    local scale = playerscaling.players[ply].Scale or 1 -- Should never be 1, but just in case
-    ply:SetModelScale(1)
-
-    -- Resets eyes
-    if (playerscaling.players[ply].Eyes) then
-        ply:SetViewOffset(ply:GetViewOffset() / scale)
-        ply:SetViewOffsetDucked(ply:GetViewOffsetDucked() / scale)
+    -- Negates fall damage for large players but does not increase fall damage for small players
+    local scale = playerscaling.players[ply].scale or 1
+    if (speed < 250 * (1 + scale)) then
+        return 0
     end
-
-    -- Resets speed
-    if (playerscaling.players[ply].Speed) then
-        --TODO(itsmeaddof123) Custom speed scale
-        ply:SetCrouchedWalkSpeed(ply:GetCrouchedWalkSpeed() / scale)
-        ply:SetSlowWalkSpeed(ply:GetSlowWalkSpeed() / scale)
-        ply:SetWalkSpeed(ply:GetWalkSpeed() / scale)
-        ply:SetMaxSpeed(ply:GetMaxSpeed() / scale)
-        ply:SetRunSpeed(ply:GetRunSpeed() / scale)
-    end
-
-    -- Resets jump
-    if (playerscaling.players[ply].Jump) then
-        --TODO(itsmeaddof123) Custom jump scale
-        ply:SetJumpPower(ply:GetJumpPower() / scale)
-    end
-
-    -- Removes saved scaling values
-    playerscaling.players[ply] = nil
-end
-
---TODO(itsmeaddof123) Add death hook
+end)
