@@ -1,8 +1,6 @@
 --[[This file contains serverside functions
-    See lua/sh_init.lua to configure advanced addon settings
-    playerscaling.setscale is the function you can use to scale players in code--]]
-
-playerscaling.lerp = playerscaling.lerp or {}
+    See sh_init.lua to configure addon settings
+    playerscaling.setscale(ply, scale, dospeed, dojump) is the function you can use to scale players in code--]]
 
 -- Communicates scaling to players
 util.AddNetworkString("playerscaling")
@@ -13,10 +11,10 @@ concommand.Add("playerscale", function(ply, cmd, args)
     ply:ChatPrint(playerscaling.setscale(ply, unpack(args)))
 end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/false for scale speed, scale jump")
 
--- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion
+-- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
 local function getspeedmult(scale)
     if (scale > 1) then -- Speeds players up less
-        return scale + (scale - 1) * math.Clamp(playerscaling.speedmultlarge, 0, 1)
+        return 1 + scale / math.Clamp(playerscaling.speedmultlarge, 1, 10)
     else -- Slows players less
         return 1 - (1 - scale) * math.Clamp(playerscaling.speedmultsmall, 0, 1)
     end
@@ -50,6 +48,9 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
         view = false,
     }
 
+    -- If no old.scale was set for some reason
+    old.scale = old.scale or 1
+
     -- Overrides for default values
     dospeed = tobool(dospeed) or GetConVar("playerscaling_speed"):GetBool()
     dojump = tobool(dojump) or GetConVar("playerscaling_jump"):GetBool()
@@ -67,11 +68,12 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
     local viewscale = (doview and scale or 1) / (old.view and old.scale or 1)
 
     -- Sets up the lerp
-    local ratio = math.Clamp(old.scale > scale and old.scale / scale or scale / old.scale, 0, 3)
-    local length = ratio * math.max(GetConVar("playerscaling_time"):GetFloat(), 0)
+    local shrinking = old.scale > scale
+    local ratio = math.Clamp(shrinking and old.scale / scale or scale / old.scale, 0, 3)
+    local length = ratio * math.max(GetConVar(shrinking and "playerscaling_downtime" or "playerscaling_uptime"):GetFloat(), 0)
 
-    -- Overrides length if shrinking rapidly
-    if (old.scale > scale and ratio > 1.5 and scale < 1 and) then
+    -- Overrides length if shrinking really small
+    if (shrinking and old.scale < 1.25 and scale < 0.75) then
         length = length / 1.5
     end
     
@@ -82,14 +84,15 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
 
     -- Saves the new scale information
     playerscaling.players[ply] = {
-        scale = oldscale,
         speed = dospeed,
         jump = dojump,
         view = doview,
     }
 
+    -- Initializes the lerp. This will automatically be executed by the Tick hook in sh_init.lua
     playerscaling.lerp[ply] = {
         -- Lerp details
+        alive = ply:Alive(),
         starttime = CurTime(),
         endtime = CurTime() + length,
         speed = dospeed,
@@ -124,22 +127,23 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
     net.Send(ply)
 end
 
--- Resets scaling on marked players on death
+--[[-- Resets scaling on marked players on death
 hook.Add("PlayerDeath", "playerscaling_death", function(ply, inf, att)
     if (not IsValid(ply) or not playerscaling.players[ply] or not GetConVar("playerscaling_death"):GetBool()) then
         return
     end
 
+    playerscaling.lerp[ply] = {}
     playerscaling.setscale(ply, 1)
-end)
+end)--]]
 
--- Negates fall damage for scaled up players
+-- Negates fall damage for certain scaled up players
 hook.Add("GetFallDamage", "playerscaling_fall", function(ply, speed)
-    if (not IsValid(ply) or not playerscaling.players[ply]) then
+    if (not IsValid(ply) or not playerscaling.players[ply] or not GetConVar("playerscaling_fall"):GetBool()) then
         return
     end
 
-    -- Negates fall damage for large players but does not increase fall damage for small players
+    -- Negates fall damage for large players under a certain speed
     local scale = playerscaling.players[ply].scale or 1
     if (speed < 250 * (1 + scale)) then
         return 0
