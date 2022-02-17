@@ -11,7 +11,7 @@ playerscaling.players = playerscaling.players or {}
 -- These can be overriden per calling of the playerscaling.setscale function
 CreateConVar("playerscaling_speed", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player speed by default?", 0, 1) -- If disabled, speed will be overwhelming when small and underwhelming when large 
 CreateConVar("playerscaling_jump", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player jump by default?", 0, 1) -- If disabled, jumps will feel massive when small and nonexistent when large
-CreateConVar("playerscaling_time", 0.05, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How much time should it take to scale?", 0) -- Set to 0 for instant scaling, or higher for slower rates. Proportional to ratio between scales
+CreateConVar("playerscaling_time", 0.1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How much time should it take to scale?", 0) -- Set to 0 for instant scaling, or higher for slower rates. Proportional to ratio between scales
 
 -- These cannot be overriden and should be changed serverside
 -- TODO(itsmeaddof123) Use util.TraceHull to prevent clipping on respawn

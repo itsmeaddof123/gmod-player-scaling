@@ -67,17 +67,22 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
     local viewscale = (doview and scale or 1) / (old.view and old.scale or 1)
 
     -- Sets up the lerp
-    local ratio = math.Clamp(old.scale > scale and old.scale / scale or scale / old.scale, 0.1, 5)
-    local length = math.max(GetConVar("playerscaling_time"):GetFloat(), 0)
+    local ratio = math.Clamp(old.scale > scale and old.scale / scale or scale / old.scale, 0, 3)
+    local length = ratio * math.max(GetConVar("playerscaling_time"):GetFloat(), 0)
+
+    -- Overrides length if shrinking rapidly
+    if (old.scale > scale and ratio > 1.5 and scale < 1 and) then
+        length = length / 1.5
+    end
     
-    -- Overrides timing if player is dead
+    -- Overrides length if player is dead
     if (not ply:Alive()) then
         length = 0
     end
 
     -- Saves the new scale information
     playerscaling.players[ply] = {
-        scale = oldscale
+        scale = oldscale,
         speed = dospeed,
         jump = dojump,
         view = doview,
