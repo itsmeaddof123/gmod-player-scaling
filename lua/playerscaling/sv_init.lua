@@ -7,9 +7,8 @@ util.AddNetworkString("playerscaling")
 
 -- Player command to scale themselves
 concommand.Add("playerscale", function(ply, cmd, args)
-    --TODO(itsmeaddof123) Possibly, add a usergroup confirmation
     ply:ChatPrint(playerscaling.setscale(ply, unpack(args)))
-end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/false for scale speed, scale jump")
+end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/false for scale speed, scale jump", FCVAR_CHEAT)
 
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
 local function getspeedmult(scale)
@@ -30,7 +29,7 @@ local function getjumpmult(scale)
 end
 
 -- Sets player scale. You can use this function when scaling players via code.
-function playerscaling.setscale(ply, scale, dospeed, dojump)
+function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     if (not IsValid(ply)) then
         return "Failed to scale: Invalid player"
     end
@@ -70,7 +69,7 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
     -- Sets up the lerp
     local shrinking = old.scale > scale
     local ratio = math.Clamp(shrinking and old.scale / scale or scale / old.scale, 0, 3)
-    local length = ratio * math.max(GetConVar(shrinking and "playerscaling_downtime" or "playerscaling_uptime"):GetFloat(), 0)
+    local length = length or ratio * math.max(GetConVar(shrinking and "playerscaling_downtime" or "playerscaling_uptime"):GetFloat(), 0.001)
 
     -- Overrides length if shrinking really small
     if (shrinking and old.scale < 1.25 and scale < 0.75) then
@@ -126,16 +125,6 @@ function playerscaling.setscale(ply, scale, dospeed, dojump)
         net.WriteFloat(length)
     net.Send(ply)
 end
-
---[[-- Resets scaling on marked players on death
-hook.Add("PlayerDeath", "playerscaling_death", function(ply, inf, att)
-    if (not IsValid(ply) or not playerscaling.players[ply] or not GetConVar("playerscaling_death"):GetBool()) then
-        return
-    end
-
-    playerscaling.lerp[ply] = {}
-    playerscaling.setscale(ply, 1)
-end)--]]
 
 -- Negates fall damage for certain scaled up players
 hook.Add("GetFallDamage", "playerscaling_fall", function(ply, speed)

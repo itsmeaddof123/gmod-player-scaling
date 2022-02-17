@@ -25,3 +25,9 @@ net.Receive("playerscaling", function(len)
         newscale = newscale,
     }
 end)
+
+-- Prints addon credits once to player, if enabled (disabled by default)
+hook.Add("Initialize", "playerscaling_credits", function()
+    print("Player Scaling is an addon created by Addi Boi - https://github.com/itsmeaddof123/gmod-player-scaling/")
+    hook.Remove("Initialize", "playerscaling_credits")
+end)
