@@ -7,6 +7,7 @@ util.AddNetworkString("playerscaling")
 
 -- Player command to scale themselves
 concommand.Add("playerscale", function(ply, cmd, args)
+    playerscaling.setscale(ply, unpack(args))
 end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/false for scale speed, scale jump", FCVAR_CHEAT)
 
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
@@ -38,10 +39,9 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
         return "Failed to scale: Invalid player"
     end
 
-    -- Return if already scaling
+    -- Interrupt if already scaling
     if (playerscaling.lerp[ply]) then
         playerscaling.finish(ply, playerscaling.lerp[ply], "interrupted")
-        --return "Failed to scale: Already scaling"
     end
 
     -- Overrides for default values
@@ -144,6 +144,8 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
         net.WriteFloat(scale)
         net.WriteFloat(length)
     net.Send(ply)
+
+    return "Succeeded to scale"
 end
 
 -- Mark the scaling as finished
