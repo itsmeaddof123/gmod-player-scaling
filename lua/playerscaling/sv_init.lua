@@ -7,7 +7,6 @@ util.AddNetworkString("playerscaling")
 
 -- Player command to scale themselves
 concommand.Add("playerscale", function(ply, cmd, args)
-    ply:ChatPrint(playerscaling.setscale(ply, unpack(args)))
 end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/false for scale speed, scale jump", FCVAR_CHEAT)
 
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
