@@ -26,6 +26,24 @@ net.Receive("playerscaling", function(len)
     }
 end)
 
+-- Lerps the scale clientside for gravity prediction
+local tick = engine.TickInterval()
+hook.Add("Tick", "playerscaling_client", function()
+    -- Attempt to change the scale clientside
+    if (playerscaling.lerpclient) then
+        local ply = LocalPlayer()
+        local info = playerscaling.lerpclient
+        local progress = (CurTime() - info.starttime) / (info.endtime - info.starttime)
+
+        playerscaling.players[ply].scale = Lerp(progress, info.oldscale, info.newscale)
+
+        -- End the lerp
+        if (progress >= 1) then
+            playerscaling.lerpclient = nil
+        end
+    end
+end)
+
 -- Prints addon credits once to player, if enabled (disabled by default)
 hook.Add("Initialize", "playerscaling_credits", function()
     print("Player Scaling is an addon created by Addi Boi - https://github.com/itsmeaddof123/gmod-player-scaling/")
