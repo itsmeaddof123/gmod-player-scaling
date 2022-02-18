@@ -52,23 +52,19 @@ CreateConVar("playerscaling_clipping", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Sh
 CreateConVar("playerscaling_pause", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling pause when stuck until unstuck?", 0, 1) -- If disabled, player scaling may get cancelled even if they were stuck for only a moment
 
 -- Settings that are less likely to need change
-for setting, parameter in pairs({
-    maximumsize = 25, -- Maximum size multiplier. Set 1 (no growing) to 10 (largest). Can higher, with caution
-    minimumsize = 0.05, -- Minimum size multiplier. Set 0.05 (smallest) to 1 (no shrinking). Can go lower, with caution
-    speedmultlarge = 2, -- Large player slowing factor. Set 1 (no slow) to 10 (full slow)
-    speedmultsmall = 0.25, -- Small player speeding factor. Set 0 (no speed up) to 1 (full speed up)
-    jumpmultlarge = 0, -- Large player jump boost. Set 0 (no jump boost) to 1 (full jump boost)
-    jumpmultsmall = 0.25, -- Small player jump lowering. Set 0 (no lowering) to 1 (full lowering)
-    minstep = 0.5, -- Minimum step size for small players. Set 0 (no lower limit) to 1 (never lower step size) 
-    gravitylarge = 200, -- Large player gravity increase. Set 0 (no increase) and up (greater gravity)
-    gravitysmall = 750, -- Small player gravity decrease. Set 0 (no decrease) and up (lower gravity)
-    falldamagelarge = 250, -- Large player fall damage negation threshold. Set 0 (no negation) and up (higher threshold)
-    doview = true, -- Scale player perspective? Set true or false (changing not recommended)
-    dostep = true, -- Scale player step size? Set true or false
-    printcredits = false, -- If you enable this, players will see credits for this addon in console. :)
-}) do
-    playerscaling[setting] = parameter
-end
+playerscaling.maximumsize = 25 -- Maximum size multiplier. Set 1 (no growing) to 10 (largest). Can higher, with caution
+playerscaling.minimumsize = 0.05 -- Minimum size multiplier. Set 0.05 (smallest) to 1 (no shrinking). Can go lower, with caution
+playerscaling.speedmultlarge = 2 -- Large player slowing factor. Set 1 (no slow) to 10 (full slow)
+playerscaling.speedmultsmall = 0.25 -- Small player speeding factor. Set 0 (no speed up) to 1 (full speed up)
+playerscaling.jumpmultlarge = 0 -- Large player jump boost. Set 0 (no jump boost) to 1 (full jump boost)
+playerscaling.jumpmultsmall = 0.25 -- Small player jump lowering. Set 0 (no lowering) to 1 (full lowering)
+playerscaling.minstep = 0.5 -- Minimum step size for small players. Set 0 (no lower limit) to 1 (never lower step size) 
+playerscaling.gravitylarge = 200 -- Large player gravity increase. Set 0 (no increase) and up (greater gravity)
+playerscaling.gravitysmall = 750 -- Small player gravity decrease. Set 0 (no decrease) and up (lower gravity)
+playerscaling.falldamagelarge = 250 -- Large player fall damage negation threshold. Set 0 (no negation) and up (higher threshold)
+playerscaling.doview = true -- Scale player perspective? Set true or false (changing not recommended)
+playerscaling.dostep = true -- Scale player step size? Set true or false
+playerscaling.printcredits = false -- If you enable this, players will see credits for this addon in console. :)
 
 -- Gravity isn't predicted, so we simulate it by adding velocity each tick
 local interval = engine.TickInterval()
