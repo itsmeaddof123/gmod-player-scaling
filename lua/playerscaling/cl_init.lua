@@ -45,7 +45,9 @@ hook.Add("Tick", "playerscaling_client", function()
 end)
 
 -- Prints addon credits once to player, if enabled (disabled by default)
-hook.Add("Initialize", "playerscaling_credits", function()
-    print("Player Scaling is an addon created by Addi Boi - https://github.com/itsmeaddof123/gmod-player-scaling/")
-    hook.Remove("Initialize", "playerscaling_credits")
-end)
+if (playerscaling.printcredits) then
+    hook.Add("Initialize", "playerscaling_credits", function()
+        print("Player Scaling is an addon created by Addi Boi - https://github.com/itsmeaddof123/gmod-player-scaling/")
+        hook.Remove("Initialize", "playerscaling_credits")
+    end)
+end
