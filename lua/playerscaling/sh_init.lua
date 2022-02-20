@@ -8,22 +8,7 @@
     addon design), but if you just want to configure some settings then see the
     ConVars and settings table. - Addi Boi
 
-    Addon Features:
-     - Scale yourself with an sv_cheats console command, "playerscale <scale> <speed?> <jump?> <time>"
-     - Scale a player in code with a function, playerscaling.setscale(ply, scale, dospeed, dojump, length)
-     - When scaling completes, a hook "playerscaling_finish" runs with arguments ply and info table (see lerp table in playerscaling.setscale)
-     - (Adjustable) Players scale up or down gradually in a smooth animation
-     - (Toggleable) Player scaling moves players away from walls/ceiling so they don't get stuck, and halts if impossible
-     - (Toggleable/Adjustable) Player speed scales automatically
-     - (Toggleable/Adjustable) Player jump power scales automatically
-     - (Toggleable) Player view offset scales automatically
-     - (Toggleable) Player scales resets to 0 on death
-     - (Toggleable/Adjustable) Scaled player gravity is adjusted to feel more natural
-     - (Toggleable/Adjustable) Scaled up players take more speed to take fall damage
-     - (Adjustable) Clamps player scale to avoid breaking the game
-     - (Toggleable) Addon credits are printed into player consoles (disabled by default)
-
-    Github: https://github.com/itsmeaddof123/gmod-player-scaling/
+    More info in the README on Github: https://github.com/itsmeaddof123/gmod-player-scaling/
 --]]
 
 --[[This file contains shared functions and settings
@@ -41,8 +26,8 @@ playerscaling.lerp = playerscaling.lerp or {}
 -- These can be overriden by the playerscaling.setscale function
 CreateConVar("playerscaling_speed", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player speed by default?", 0, 1) -- If disabled, speed will be overwhelming when small and underwhelming when large 
 CreateConVar("playerscaling_jump", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling affect player jump by default?", 0, 1) -- If disabled, jumps will feel massive when small and nonexistent when large
-CreateConVar("playerscaling_uptime", 0.25, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How much time should it take to scale up?", 0) -- Set to 0 for instant scaling, or higher for slower rates. Proportional to ratio between scales
-CreateConVar("playerscaling_downtime", 0.15, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How much time should it take to scale down?", 0) -- Set to 0 for instant scaling, or higher for slower rates. Proportional to ratio between scales
+CreateConVar("playerscaling_uptime", 0.3, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How much time should it take to scale up by default?", 0) -- Set to 0 for instant scaling, or higher for slower rates. Proportional to ratio between scales
+CreateConVar("playerscaling_downtime", 0.2, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "How much time should it take to scale down by default?", 0) -- Set to 0 for instant scaling, or higher for slower rates. Proportional to ratio between scales
 
 -- These can be changed serverside
 CreateConVar("playerscaling_death", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should scaling reset on death?", 0, 1) -- If disabled, large players may clip into walls on respawn
@@ -53,15 +38,15 @@ CreateConVar("playerscaling_pause", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Shoul
 
 -- Settings that are less likely to need change
 for setting, parameter in pairs({
-    maximumsize = 25, -- Maximum size multiplier. Set 1 (no growing) to 10 (largest). Can higher, with caution
+    maximumsize = 25, -- Maximum size multiplier. Set 1 (no growing) to 25 (largest). Can go higher, with caution
     minimumsize = 0.05, -- Minimum size multiplier. Set 0.05 (smallest) to 1 (no shrinking). Can go lower, with caution
     speedmultlarge = 2, -- Large player slowing factor. Set 1 (no slow) to 10 (full slow)
-    speedmultsmall = 0.25, -- Small player speeding factor. Set 0 (no speed up) to 1 (full speed up)
+    speedmultsmall = 0.8, -- Small player speeding factor. Set 0 (no speed up) to 1 (full speed up)
     jumpmultlarge = 0, -- Large player jump boost. Set 0 (no jump boost) to 1 (full jump boost)
-    jumpmultsmall = 0.25, -- Small player jump lowering. Set 0 (no lowering) to 1 (full lowering)
-    minstep = 0.5, -- Minimum step size for small players. Set 0 (no lower limit) to 1 (never lower step size) 
+    jumpmultsmall = 0.6, -- Small player jump lowering. Set 0 (no lowering) to 1 (full lowering)
+    minstep = 0.25, -- Minimum step size for small players. Set 0 (no lower limit) to 1 (never lower step size) 
     gravitylarge = 200, -- Large player gravity increase. Set 0 (no increase) and up (greater gravity)
-    gravitysmall = 750, -- Small player gravity decrease. Set 0 (no decrease) and up (lower gravity)
+    gravitysmall = 500, -- Small player gravity decrease. Set 0 (no decrease) and up (lower gravity)
     falldamagelarge = 250, -- Large player fall damage negation threshold. Set 0 (no negation) and up (higher threshold)
     doview = true, -- Scale player perspective? Set true or false (changing not recommended)
     dostep = true, -- Scale player step size? Set true or false

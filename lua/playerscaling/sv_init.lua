@@ -1,6 +1,6 @@
 --[[This file contains serverside functions
     See sh_init.lua to configure addon settings
-    playerscaling.setscale(ply, scale, dospeed, dojump) is the function you can use to scale players in code--]]
+    playerscaling.setscale(ply, scale, dospeed, dojump, length) is the function you can use to scale players in code--]]
 
 -- Communicates scaling to players
 util.AddNetworkString("playerscaling")
