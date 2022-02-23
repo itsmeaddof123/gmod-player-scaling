@@ -1,4 +1,7 @@
---[[This file contains clientside functions--]]
+--[[Player Scaling By Addi--]]
+
+-- ConVars used in this file
+local credits = GetConVar("playerscaling_credits")
 
 -- Reads in player scale updates
 net.Receive("playerscaling", function(len)
@@ -45,7 +48,7 @@ hook.Add("Tick", "playerscaling_client", function()
 end)
 
 -- Prints addon credits once to player, if enabled (disabled by default)
-if (playerscaling.printcredits) then
+if (credits:GetBool()) then
     hook.Add("Initialize", "playerscaling_credits", function()
         print("Player Scaling is an addon created by Addi Boi - https://github.com/itsmeaddof123/gmod-player-scaling/")
         hook.Remove("Initialize", "playerscaling_credits")

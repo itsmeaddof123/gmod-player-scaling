@@ -1,9 +1,35 @@
---[[This file contains serverside functions
-    See sh_init.lua to configure addon settings
+--[[Player Scaling By Addi
+    
+    This file contains serverside functions
+    See sh_config.lua for addon settings
+
     playerscaling.setscale(ply, scale, dospeed, dojump, length) is the function you can use to scale players in code--]]
 
 -- Communicates scaling to players
 util.AddNetworkString("playerscaling")
+
+-- ConVars used in this file
+local speed = GetConVar("playerscaling_speed")
+local jump = GetConVar("playerscaling_jump")
+local uptime = GetConVar("playerscaling_uptime")
+local downtime = GetConVar("playerscaling_downtime")
+
+local death = GetConVar("playerscaling_death")
+local fall = GetConVar("playerscaling_fall")
+local clipping = GetConVar("playerscaling_clipping")
+local pause = GetConVar("playerscaling_pause")
+local view = GetConVar("playerscaling_view")
+local step = GetConVar("playerscaling_step")
+local maxsize = GetConVar("playerscaling_maxsize")
+local minsize = GetConVar("playerscaling_minsize")
+local speedlarge = GetConVar("playerscaling_speedlarge")
+local speedsmall = GetConVar("playerscaling_speedsmall")
+local jumplarge = GetConVar("playerscaling_jumplarge")
+local jumpsmall = GetConVar("playerscaling_jumpsmall")
+local stepsmall = GetConVar("playerscaling_stepsmall")
+local jumpsmall = GetConVar("playerscaling_jumpsmall")
+local jumpsmall = GetConVar("playerscaling_jumpsmall")
+local falllarge = GetConVar("playerscaling_falllarge")
 
 -- Player command to scale themselves
 concommand.Add("playerscale", function(ply, cmd, args)
@@ -13,24 +39,24 @@ end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/fa
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
 local function getspeedmult(scale)
     if (scale > 1) then -- Speeds players up less
-        return 1 + (scale - 1) * math.Clamp(playerscaling.speedmultlarge, 0, 1)
+        return 1 + (scale - 1) * math.Clamp(speedlarge:GetFloat(), 0, 1)
     else -- Slows players less
-        return 1 - (1 - scale) * math.Clamp(playerscaling.speedmultsmall, 0, 1)
+        return 1 - (1 - scale) * math.Clamp(speedsmall:GetFloat(), 0, 1)
     end
 end
 
 -- Scaling size to jump 1:1 doesn't feel natural, so here's a custom conversion
 local function getjumpmult(scale)
     if (scale > 1) then -- Upward jump scaling seems fine so far
-        return 1 + (scale - 1) * math.Clamp(playerscaling.jumpmultlarge, 0, 1)
+        return 1 + (scale - 1) * math.Clamp(jumplarge:GetFloat(), 0, 1)
     else -- Lowers jump power less
-        return 1 - (1 - scale) * math.Clamp(playerscaling.jumpmultsmall, 0, 1)
+        return 1 - (1 - scale) * math.Clamp(jumpsmall:GetFloat(), 0, 1)
     end
 end
 
 -- Scaling step size 1:1 feels good except for when you're scaled down
 local function getstepmult(scale)
-    return (math.max(scale, playerscaling.minstep))
+    return (math.max(scale, stepsmall:GetFloat()))
 end
 
 -- Sets player scale. You can use this function when scaling players via code.
@@ -48,15 +74,15 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     if (dospeed ~= nil) then
         dospeed = tobool(dospeed)
     else
-        dospeed = GetConVar("playerscaling_speed"):GetBool()
+        dospeed = speed:GetBool()
     end
     if (dojump ~= nil) then
         dojump = tobool(dojump)
     else
-        dojump = GetConVar("playerscaling_jump"):GetBool()
+        dojump = jump:GetBool()
     end
-    local doview = playerscaling.doview
-    local dostep = playerscaling.dostep
+    local doview = view:GetBool()
+    local dostep = step:GetBool()
     
     -- Get old scale values if there are any, or use mirrored values
     local old = table.Copy(playerscaling.players[ply]) or {
@@ -71,7 +97,7 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     old.scale = old.scale or 1
 
     -- Gets scale and returns if there are no changes
-    scale = math.Clamp(scale or 1, playerscaling.minimumsize, playerscaling.maximumsize)
+    scale = math.Clamp(scale or 1, minsize:GetFloat(), maxsize:GetFloat())
     if (old.scale == scale and old.speed == dospeed and old.jump == dojump and old.view == playerscaling.doview) then
         return "Failed to scale: Values unchanged"
     end
@@ -85,7 +111,7 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     -- Sets up the lerp
     local shrinking = old.scale > scale
     local ratio = math.Clamp(shrinking and old.scale / scale or scale / old.scale, 0, 3)
-    local length = length or ratio * math.max(GetConVar(shrinking and "playerscaling_downtime" or "playerscaling_uptime"):GetFloat(), 0.001)
+    local length = length or ratio * math.max(shrinking and downtime:GetFloat() or uptime:GetFloat(), 0.001)
 
     -- Overrides length if shrinking really small
     if (shrinking and old.scale < 1.25 and scale < 0.75) then
@@ -163,13 +189,13 @@ end
 
 -- Negates fall damage for certain scaled up players
 hook.Add("GetFallDamage", "playerscaling_fall", function(ply, speed)
-    if (not IsValid(ply) or not playerscaling.players[ply] or not GetConVar("playerscaling_fall"):GetBool()) then
+    if (not IsValid(ply) or not playerscaling.players[ply] or not fall:GetBool()) then
         return
     end
 
     -- Negates fall damage for large players under a certain speed
     local scale = playerscaling.players[ply].scale or 1
-    if (speed < 250 * (1 + scale)) then
+    if (speed < falllarge:GetFloat() * (1 + scale)) then
         return 0
     end
 end)
@@ -207,7 +233,7 @@ local interval = engine.TickInterval()
 
 -- Handles scale pausing
 local function scaleshouldpause(ply, info)
-    if (GetConVar("playerscaling_pause"):GetBool()) then
+    if (pause:GetBool()) then
         -- Offsets the Lerp so that it continues smoothly after unpausing
         info.starttime = info.starttime + interval
         info.endtime = info.endtime + interval
@@ -230,7 +256,7 @@ hook.Add("Tick", "playescaling_tickserver", function()
             playerscaling.finish(ply, info, "death")
 
             -- And if players should reset scale on death, do so
-            if (GetConVar("playerscaling_death"):GetBool()) then
+            if (death:GetBool()) then
                 playerscaling.setscale(ply, 1)
             end
 
@@ -247,7 +273,7 @@ hook.Add("Tick", "playescaling_tickserver", function()
         local nextscale = Lerp(progress, oldscale, newscale)
 
         -- If the player is growing, alive, and not noclipping, we need to avoid clipping
-        if (curscale < nextscale and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and GetConVar("playerscaling_clipping"):GetBool()) then
+        if (curscale < nextscale and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and clipping:GetBool()) then
             -- See if they are going to clip anything
             local pos = ply:GetPos()
             if (not playerwillfit(ply, pos, nextscale)) then
@@ -310,7 +336,7 @@ hook.Add("Tick", "playescaling_tickserver", function()
         -- End the lerp
         if (progress >= 1) then
             -- Occasionally players will get stuck in the final tick of the Lerp, so this will get them unstuck
-            if (not playerwillfit(ply, ply:GetPos(), ply:GetModelScale()) and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and GetConVar("playerscaling_clipping"):GetBool()) then
+            if (not playerwillfit(ply, ply:GetPos(), ply:GetModelScale()) and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and clipping:GetBool()) then
                 playerscaling.setscale(ply, info.newscale * 0.95, info.dospeed, info.dojump, 0)
                 continue
             end

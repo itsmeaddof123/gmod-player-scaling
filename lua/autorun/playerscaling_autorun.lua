@@ -1,25 +1,32 @@
---[[File Loader for Player Scaling by Addi--]]
+--[[Player Scaling by Addi--]]
 
 -- Shared files
-for k, v in pairs(file.Find("playerscaling/sh_*", "LUA")) do
+for k, name in ipairs({
+    "sh/config.lua",
+    "sh/init.lua",
+}) do
     if (SERVER) then
-        AddCSLuaFile("playerscaling/" .. tostring(v))
+        AddCSLuaFile("playerscaling/" .. name)
     end
-    include("playerscaling/" .. tostring(v))
+    include("playerscaling/" .. name)
 end
 
 -- Server files
 if (SERVER) then
-    for k, v in pairs(file.Find("playerscaling/sv_*", "LUA")) do
-        include("playerscaling/" .. tostring(v))
+    for k, name in ipairs({
+        "sv/init.lua",
+    }) do
+        include("playerscaling/" .. name)
     end
 end
 
 -- Main client files
-for k, v in pairs(file.Find("playerscaling/cl_*", "LUA")) do
+for k, name in ipairs({
+    "cl/init.lua",
+}) do
     if (SERVER) then
-        AddCSLuaFile("playerscaling/" .. tostring(v))
+        AddCSLuaFile("playerscaling/" .. name)
     else
-        include("playerscaling/" .. tostring(v))
+        include("playerscaling/" .. name)
     end
 end
