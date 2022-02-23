@@ -13,7 +13,7 @@ end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/fa
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
 local function getspeedmult(scale)
     if (scale > 1) then -- Speeds players up less
-        return 1 + scale / math.Clamp(playerscaling.speedmultlarge, 1, 10)
+        return 1 + (scale - 1) * math.Clamp(playerscaling.speedmultlarge, 0, 1)
     else -- Slows players less
         return 1 - (1 - scale) * math.Clamp(playerscaling.speedmultsmall, 0, 1)
     end
@@ -22,7 +22,7 @@ end
 -- Scaling size to jump 1:1 doesn't feel natural, so here's a custom conversion
 local function getjumpmult(scale)
     if (scale > 1) then -- Upward jump scaling seems fine so far
-        return scale + (scale - 1) * math.Clamp(playerscaling.jumpmultlarge, 0, 1)
+        return 1 + (scale - 1) * math.Clamp(playerscaling.jumpmultlarge, 0, 1)
     else -- Lowers jump power less
         return 1 - (1 - scale) * math.Clamp(playerscaling.jumpmultsmall, 0, 1)
     end
@@ -238,7 +238,7 @@ hook.Add("Tick", "playescaling_tickserver", function()
         end
 
         -- Get the proportional progress for the lerp
-        local progress = (CurTime() - info.starttime) / (info.endtime - info.starttime)
+        local progress = (CurTime() - info.starttime) / math.max((info.endtime - info.starttime), 0.001)
         local newscale = info.newscale
         local oldscale = info.oldscale
 

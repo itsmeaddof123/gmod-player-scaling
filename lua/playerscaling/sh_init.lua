@@ -40,9 +40,9 @@ CreateConVar("playerscaling_pause", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Shoul
 for setting, parameter in pairs({
     maximumsize = 25, -- Maximum size multiplier. Set 1 (no growing) to 25 (largest). Can go higher, with caution
     minimumsize = 0.05, -- Minimum size multiplier. Set 0.05 (smallest) to 1 (no shrinking). Can go lower, with caution
-    speedmultlarge = 2, -- Large player slowing factor. Set 1 (no slow) to 10 (full slow)
+    speedmultlarge = 0.5, -- Large player slowing factor. Set 1 (no slow) to 10 (full slow)
     speedmultsmall = 0.8, -- Small player speeding factor. Set 0 (no speed up) to 1 (full speed up)
-    jumpmultlarge = 0, -- Large player jump boost. Set 0 (no jump boost) to 1 (full jump boost)
+    jumpmultlarge = 1, -- Large player jump boost. Set 0 (no jump boost) to 1 (full jump boost)
     jumpmultsmall = 0.6, -- Small player jump lowering. Set 0 (no lowering) to 1 (full lowering)
     minstep = 0.25, -- Minimum step size for small players. Set 0 (no lower limit) to 1 (never lower step size) 
     gravitylarge = 200, -- Large player gravity increase. Set 0 (no increase) and up (greater gravity)
