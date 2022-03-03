@@ -26,30 +26,28 @@ Finished Scaling Hook: **"playerscaling_finish", function(\<Player ply\>, \<tabl
 
 ## **Customization:**
 Server ConVars: (Found in sh_init.lua)
- - playerscaling_speed - Should scaling affect player speed by default?
- - playerscaling_jump - Should scaling affect player jump by default?
- - playerscaling_uptime - How much time should it take to scale up?
- - playerscaling_downtime - How much time should it take to scale down?
- - playerscaling_death - Should scaling reset on death?
- - playerscaling_gravity - Should scaling affect player gravity?
- - playerscaling_fall - Should scaling negate certain fall damage?
- - playerscaling_clipping - Should scaling prevent clipping into objects?
- - playerscaling_pause - Should scaling pause when stuck until unstuck?
-
-Other: (Found in sh_init.lua)
- - playerscaling.maximumsize - Maximum size multiplier
- - playerscaling.minimumsize - Minimum size multiplier
- - playerscaling.speedmultlarge - Large player slowing factor
- - playerscaling.speedmultsmall - Small player speeding factor
- - playerscaling.jumpmultlarge - Large player jump boost
- - playerscaling.jumpmultsmall - Small player jump lowering
- - playerscaling.minstep - Minimum step size for small players
- - playerscaling.gravitylarge - Large player gravity increase
- - playerscaling.gravitysmall - Small player gravity decrease
- - playerscaling.falldamagelarge - Large player fall damage negation threshold
- - playerscaling.doview - Scale player perspective?
- - playerscaling.dostep - Scale player step size?
- - playerscaling.printcredits - If you enable this, players will see credits for this addon in console. :)
+ - **playerscaling_speed** - Should scaling affect player speed by default?
+ - **playerscaling_jump** - Should scaling affect player jump by default?
+ - **playerscaling_uptime** - How much time should it take to scale up?
+ - **playerscaling_downtime** - How much time should it take to scale down?
+ - **playerscaling_death** - Should scaling reset on death?
+ - **playerscaling_gravity** - Should scaling affect player gravity?
+ - **playerscaling_fall** - Should scaling negate certain fall damage?
+ - **playerscaling_clipping** - Should scaling prevent clipping into objects?
+ - **playerscaling_pause** - Should scaling pause when stuck until unstuck?
+ - **playerscaling_view** - Scale player perspective?
+ - **playerscaling_step** - Scale player step size?
+ - **playerscaling_maxsize** - Maximum size multiplier
+ - **playerscaling_minsize** - Minimum size multiplier
+ - **playerscaling_speedlarge** - Large player slowing factor
+ - **playerscaling_speedsmall** - Small player speeding factor
+ - **playerscaling_jumplarge** - Large player jump boost
+ - **playerscaling_jumpsmall** - Small player jump lowering
+ - **playerscaling_stepsmall** - Minimum step size for small players
+ - **playerscaling_gravitylarge** - Large player gravity increase
+ - **playerscaling_gravitysmall** - Small player gravity decrease
+ - **playerscaling_falllarge** - Large player fall damage negation threshold
+ - **playerscaling_credits** - If you enable this, players will see credits for this addon in console. :)
 
 ## **Other Features:**
 - Players scale up and down with smooth animations
