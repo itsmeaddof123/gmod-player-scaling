@@ -30,25 +30,25 @@ local gravitysmall = GetConVar("playerscaling_gravitysmall")
 local interval = engine.TickInterval()
 hook.Add("Tick", "playerscaling_tickshared", function()
     -- Only affects player gravity if the setting is enabled
-    if (gravity:GetBool()) then-- Gets gravity settings
+    if gravity:GetBool() then-- Gets gravity settings
         local multlarge = -1 * math.max(gravitylarge:GetFloat() or 100, 0)
         local multsmall = math.max(gravitysmall:GetFloat() or 100, 0)
 
         -- Cycles through each currently scaled player
         for ply, info in pairs(playerscaling.players) do
             -- Skip gravity on invalid, dead, and grounded players
-            if (not IsValid(ply) or not ply:Alive() or ply:IsOnGround()) then
+            if not IsValid(ply) or not ply:Alive() or ply:IsOnGround() then
                 continue
             end
 
             -- Gets scale and skips unscaled players
             local scale = info.scale
-            if (not scale or scale == 1) then
+            if not scale or scale == 1 then
                 continue
             end
 
             -- Gravity affects everything the same so this is really more about simulating air resistance
-            if (scale > 1) then -- Increase acceleration for large players
+            if scale > 1 then -- Increase acceleration for large players
                 ply:SetVelocity(Vector(0, 0, interval * multlarge * scale))
             else -- Decrease acceleration for small players
                 ply:SetVelocity(Vector(0, 0, interval * math.min(500, multsmall * (1 - scale)))) -- math.max prevents players from floating

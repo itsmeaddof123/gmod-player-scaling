@@ -38,7 +38,7 @@ end, nil, "Set your size multiplier from 0.05 to 10. Other arguments are true/fa
 
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
 local function getspeedmult(scale)
-    if (scale > 1) then -- Speeds players up less
+    if scale > 1 then -- Speeds players up less
         return 1 + (scale - 1) * math.Clamp(speedlarge:GetFloat(), 0, 1)
     else -- Slows players less
         return 1 - (1 - scale) * math.Clamp(speedsmall:GetFloat(), 0, 1)
@@ -47,7 +47,7 @@ end
 
 -- Scaling size to jump 1:1 doesn't feel natural, so here's a custom conversion
 local function getjumpmult(scale)
-    if (scale > 1) then -- Upward jump scaling seems fine so far
+    if scale > 1 then -- Upward jump scaling seems fine so far
         return 1 + (scale - 1) * math.Clamp(jumplarge:GetFloat(), 0, 1)
     else -- Lowers jump power less
         return 1 - (1 - scale) * math.Clamp(jumpsmall:GetFloat(), 0, 1)
@@ -61,22 +61,22 @@ end
 
 -- Sets player scale. You can use this function when scaling players via code.
 function playerscaling.setscale(ply, scale, dospeed, dojump, length)
-    if (not IsValid(ply)) then
+    if not IsValid(ply) then
         return "Failed to scale: Invalid player"
     end
 
     -- Interrupt if already scaling
-    if (playerscaling.lerp[ply]) then
+    if playerscaling.lerp[ply] then
         playerscaling.finish(ply, playerscaling.lerp[ply], "interrupted")
     end
 
     -- Overrides for default values
-    if (dospeed ~= nil) then
+    if dospeed ~= nil then
         dospeed = tobool(dospeed)
     else
         dospeed = speed:GetBool()
     end
-    if (dojump ~= nil) then
+    if dojump ~= nil then
         dojump = tobool(dojump)
     else
         dojump = jump:GetBool()
@@ -98,7 +98,7 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
 
     -- Gets scale and returns if there are no changes
     scale = math.Clamp(scale or 1, minsize:GetFloat(), maxsize:GetFloat())
-    if (old.scale == scale and old.speed == dospeed and old.jump == dojump and old.view == playerscaling.doview) then
+    if old.scale == scale and old.speed == dospeed and old.jump == dojump and old.view == playerscaling.doview then
         return "Failed to scale: Values unchanged"
     end
 
@@ -114,12 +114,12 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     local length = length or ratio * math.max(shrinking and downtime:GetFloat() or uptime:GetFloat(), 0.001)
 
     -- Overrides length if shrinking really small
-    if (shrinking and old.scale < 1.25 and scale < 0.75) then
+    if shrinking and old.scale < 1.25 and scale < 0.75 then
         length = length / 1.5
     end
     
     -- Overrides length if player is dead
-    if (not ply:Alive()) then
+    if not ply:Alive() then
         length = 0
     end
 
@@ -176,7 +176,7 @@ end
 
 -- Mark the scaling as finished
 function playerscaling.finish(ply, info, reason)
-    if (not IsValid(ply)) then
+    if not IsValid(ply) then
         return
     end
 
@@ -189,20 +189,20 @@ end
 
 -- Negates fall damage for certain scaled up players
 hook.Add("GetFallDamage", "playerscaling_fall", function(ply, speed)
-    if (not IsValid(ply) or not playerscaling.players[ply] or not fall:GetBool()) then
+    if not IsValid(ply) or not playerscaling.players[ply] or not fall:GetBool() then
         return
     end
 
     -- Negates fall damage for large players under a certain speed
     local scale = playerscaling.players[ply].scale or 1
-    if (speed < falllarge:GetFloat() * (1 + scale)) then
+    if speed < falllarge:GetFloat() * (1 + scale) then
         return 0
     end
 end)
 
 -- Utility function to check if the player will fit in a given spot
 local function playerwillfit(ply, pos, scale)
-    if (not IsValid(ply)) then
+    if not IsValid(ply) then
         return
     end
 
@@ -221,7 +221,7 @@ local function playerwillfit(ply, pos, scale)
     local trace = util.TraceHull(tr)
 
     -- If they will, see if they can be moved away
-    if (trace.Hit) then
+    if trace.Hit then
         return false
     end
 
@@ -233,7 +233,7 @@ local interval = engine.TickInterval()
 
 -- Handles scale pausing
 local function scaleshouldpause(ply, info)
-    if (pause:GetBool()) then
+    if pause:GetBool() then
         -- Offsets the Lerp so that it continues smoothly after unpausing
         info.starttime = info.starttime + interval
         info.endtime = info.endtime + interval
@@ -247,16 +247,16 @@ end
 hook.Add("Tick", "playescaling_tickserver", function()
     -- Attempt to scale players
     for ply, info in pairs(playerscaling.lerp) do
-        if (not IsValid(ply)) then
+        if not IsValid(ply) then
             continue
         end
 
         -- If the player dies while scaling it needs to end
-        if (ply:Alive() ~= info.alive) then
+        if ply:Alive() ~= info.alive then
             playerscaling.finish(ply, info, "death")
 
             -- And if players should reset scale on death, do so
-            if (death:GetBool()) then
+            if death:GetBool() then
                 playerscaling.setscale(ply, 1)
             end
 
@@ -273,10 +273,10 @@ hook.Add("Tick", "playescaling_tickserver", function()
         local nextscale = Lerp(progress, oldscale, newscale)
 
         -- If the player is growing, alive, and not noclipping, we need to avoid clipping
-        if (curscale < nextscale and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and clipping:GetBool()) then
+        if curscale < nextscale and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and clipping:GetBool() then
             -- See if they are going to clip anything
             local pos = ply:GetPos()
-            if (not playerwillfit(ply, pos, nextscale)) then
+            if not playerwillfit(ply, pos, nextscale) then
                 -- If they will clip in their current position, see if we can move them 
                 local scalediff = nextscale - curscale
                 local horidiff = 16 * scalediff
@@ -291,8 +291,8 @@ hook.Add("Tick", "playescaling_tickserver", function()
                 local zneg = playerwillfit(ply, pos - Vector(0, 0, vertdiff), curscale)
 
                 -- Ends the lerp early if any direction fails both ways
-                if (not (xpos or xneg) or not (ypos or yneg) or not (zpos or zneg)) then
-                    if (not scaleshouldpause(ply, info)) then -- Pauses until there is room
+                if not (xpos or xneg) or not (ypos or yneg) or not (zpos or zneg) then
+                    if not scaleshouldpause(ply, info) then -- Pauses until there is room
                         playerscaling.finish(ply, info, "stuck")
                     end
                     continue
@@ -305,10 +305,10 @@ hook.Add("Tick", "playescaling_tickserver", function()
                 local newpos = pos + Vector(xoff * 16 * scalediff, yoff * 16 * scalediff, zoff * (ply:Crouching() and 36 or 72) * scalediff)
 
                 -- If the new position works, move the player
-                if (playerwillfit(ply, newpos, nextscale)) then
+                if playerwillfit(ply, newpos, nextscale) then
                     ply:SetPos(newpos)
                 else -- Otherwise, give up and end the lerp
-                    if (not scaleshouldpause(ply, info)) then -- Pauses until there is room
+                    if not scaleshouldpause(ply, info) then -- Pauses until there is room
                         playerscaling.finish(ply, info, "failed")
                     end
                     continue
@@ -329,14 +329,14 @@ hook.Add("Tick", "playescaling_tickserver", function()
         ply:SetStepSize(Lerp(progress, info.oldstep, info.newstep))
 
         -- For some reason this has to be manual or player view switches to standing
-        if (ply:Crouching()) then
+        if ply:Crouching() then
             ply:SetCurrentViewOffset(ply:GetViewOffsetDucked())
         end
 
         -- End the lerp
-        if (progress >= 1) then
+        if progress >= 1 then
             -- Occasionally players will get stuck in the final tick of the Lerp, so this will get them unstuck
-            if (not playerwillfit(ply, ply:GetPos(), ply:GetModelScale()) and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and clipping:GetBool()) then
+            if not playerwillfit(ply, ply:GetPos(), ply:GetModelScale()) and ply:Alive() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and clipping:GetBool() then
                 playerscaling.setscale(ply, info.newscale * 0.95, info.dospeed, info.dojump, 0)
                 continue
             end
@@ -349,12 +349,12 @@ end)
 
 -- Resets player scaling on death
 hook.Add("PlayerDeath", "playerscaling_death", function(ply, inf, att)
-    if (not IsValid(ply) or (playerscaling.lerp[ply])) then
+    if not IsValid(ply) or (playerscaling.lerp[ply]) then
         return
     end
 
     local info = playerscaling.players[ply]
-    if (info) then
+    if info then
         playerscaling.setscale(ply, 1)
     end
 end)

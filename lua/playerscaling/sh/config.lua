@@ -4,7 +4,7 @@
     or just change the ConVar values on your server itself--]]
 
 -- ConVars relevant only to the server. It's fine that they're shared because it isn't sensitive info
-if (SERVER) then
+if SERVER then
     -- Scaling toggles/parameters that the playerscaling.setscale function can override
     CreateConVar("playerscaling_speed", 1, {FCVAR_ARCHIVE}, "Should scaling affect player speed by default?", 0, 1) -- If disabled, speed will be overwhelming when small and underwhelming when large 
     CreateConVar("playerscaling_jump", 1, {FCVAR_ARCHIVE}, "Should scaling affect player jump by default?", 0, 1) -- If disabled, jumps will feel massive when small and nonexistent when large
