@@ -3,7 +3,8 @@
     This file contains serverside functions
     See sh_config.lua for addon settings
 
-    playerscaling.setscale(ply, scale, dospeed, dojump, length) is the function you can use to scale players in code--]]
+    playerscaling.setscale(ply, scale, dospeed, dojump, length) is the function you can use to scale players in code
+    playerscaling.multiplyscale(ply, mult, dospeed, dojump, length) lets you multiply the current or target scale--]]
 
 -- Communicates scaling to players
 util.AddNetworkString("playerscaling")
@@ -35,6 +36,11 @@ local falllarge = GetConVar("playerscaling_falllarge")
 concommand.Add("playerscale", function(ply, cmd, args)
     playerscaling.setscale(ply, unpack(args))
 end, nil, "Set your size multiplier. Other arguments are true/false for scale speed, scale jump", FCVAR_CHEAT)
+
+-- Player command to multiply their scale
+concommand.Add("playerscalemult", function(ply, cmd, args)
+    playerscaling.multiplyscale(ply, unpack(args))
+end, nil, "Multiply your scale. Other arguments are true/false for scale speed, scale jump", FCVAR_CHEAT)
 
 -- Scaling size to speed 1:1 doesn't feel natural, so here's a custom conversion    
 local function getspeedmult(scale)
@@ -172,6 +178,20 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     net.Send(ply)
 
     return "Succeeded to scale"
+end
+
+-- Lets you multiply a player's current scale (or target scale if they're in the middle of a lerp)
+function playerscaling.multiplyscale(ply, mult, dospeed, dojump, length)
+    if not IsValid(ply) or not ply:Alive() then
+        return
+    end
+
+    -- Gets the player's target scale or their current scale if no lerp
+    local info = playerscaling.lerp[ply]
+    local scale = info and info.newscale or ply:GetModelScale()
+
+    -- Setscale takes care of the rest of it
+    return playerscaling.setscale(ply, scale * mult, dospeed, dojump, length)
 end
 
 -- Mark the scaling as finished

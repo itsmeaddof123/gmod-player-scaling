@@ -13,10 +13,15 @@ Scaling Console Command: **playerscale \<number scale\> \<boolean dospeed\> \<bo
  - dojump is a true/false value of if the player's jump power should scale, default true
  - time is the length in seconds of the scaling process, calculates based on configuration if not provided
  - This commands requires sv_cheats 1
- - This console command directly calls the below function
 
-Scaling Function: **playerscaling.setscale(\<Player ply\>, \<number scale\>, \<boolean dospeed\>, \<boolean dojump\>, \<number time\>)**
+ Multiply Scale Console Command: **playerscale \<number scale\> \<boolean dospeed\> \<boolean dojump\> \<number time\>**
+ - Same arguments with a multiplier instead of a scale
+
+Set Scale Function: **playerscaling.setscale(\<Player ply\>, \<number scale\>, \<boolean dospeed\>, \<boolean dojump\>, \<number time\>)**
  - Same arguments with additional ply, the player to be scaled
+
+Multiply Scale Function: **playerscaling.multiplyscale(\<Player ply\>, \<number mult\>, \<boolean dospeed\>, \<boolean dojump\>, \<number time\>)**
+ - Same arguments with a multiplier instead of a scale
 
 Finished Scaling Hook: **"playerscaling_finish", function(\<Player ply\>, \<table info\>, \<string reason\>)**
  - ply is the player who was scaled
