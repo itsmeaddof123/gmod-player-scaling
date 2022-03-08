@@ -28,8 +28,6 @@ local speedsmall = GetConVar("playerscaling_speedsmall")
 local jumplarge = GetConVar("playerscaling_jumplarge")
 local jumpsmall = GetConVar("playerscaling_jumpsmall")
 local stepsmall = GetConVar("playerscaling_stepsmall")
-local jumpsmall = GetConVar("playerscaling_jumpsmall")
-local jumpsmall = GetConVar("playerscaling_jumpsmall")
 local falllarge = GetConVar("playerscaling_falllarge")
 
 -- Player console command to scale themselves

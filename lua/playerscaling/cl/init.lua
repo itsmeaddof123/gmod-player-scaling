@@ -59,13 +59,13 @@ hook.Add("CalcView", "playerscaling_calcview", function(ply, origin, angles, fov
     end
 
     -- Calls its own hook with an extra argument "stacked"
-    local view = hook.Run("CalcView", ply, origin, angles, fov, znear, zfar, true) or {
-        origin = origin,
-        angles = angles,
-        fov = fov,
-        znear = znear,
-        zfar = zfar,
-    }
+    local view = hook.Run("CalcView", ply, origin, angles, fov, znear, zfar, true) or {}
+
+    view.origin = view.origin or origin,
+    view.angles = view.angles or angles,
+    view.fov = view.fov or fov,
+    view.znear = view.znear or znear,
+    view.zfar = view.zfar or zfar,
 
     -- Modifies znear
     view.znear = view.znear * scale
