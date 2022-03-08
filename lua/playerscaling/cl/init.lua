@@ -2,6 +2,8 @@
 
 -- ConVars used in this file
 local credits = GetConVar("playerscaling_credits")
+local minsize = GetConVar("playerscaling_minsize")
+local maxsize = GetConVar("playerscaling_maxsize")
 
 -- Reads in player scale updates
 net.Receive("playerscaling", function(len)
@@ -69,6 +71,18 @@ hook.Add("CalcView", "playerscaling_calcview", function(ply, origin, angles, fov
     view.znear = view.znear * scale
 
     return view
+end)
+
+-- Add spawnmenu utility for sandbox
+hook.Add("PopulateToolMenu", "playerscaling_utility", function()
+    spawnmenu.AddToolMenuOption("Utilities", "User", "PlayerscalingSetting", "Player Scale", "", "", function(panel)
+        panel:NumSlider("Player Scale:", "playerscaling_clientscale", minsize:GetFloat(), maxsize:GetFloat())
+        panel:CheckBox("Scale Speed", "playerscaling_clientspeed")
+        panel:CheckBox("Scale Jump", "playerscaling_clientjump")
+        panel:CheckBox("Override Scale Time", "playerscaling_clientmanual")
+        panel:NumSlider("Scale Time:", "playerscaling_clienttime", 0, 30)
+        panel:Button("Set Scale", "playerscaling_utility")
+    end)
 end)
 
 -- Prints addon credits once to player, if enabled (disabled by default)

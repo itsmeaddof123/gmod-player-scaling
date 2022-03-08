@@ -32,10 +32,21 @@ local jumpsmall = GetConVar("playerscaling_jumpsmall")
 local jumpsmall = GetConVar("playerscaling_jumpsmall")
 local falllarge = GetConVar("playerscaling_falllarge")
 
--- Player command to scale themselves
+-- Player console command to scale themselves
 concommand.Add("playerscale", function(ply, cmd, args)
     playerscaling.setscale(ply, unpack(args))
 end, nil, "Set your size multiplier. Other arguments are true/false for scale speed, scale jump", FCVAR_CHEAT)
+
+-- Player utility command to scale themselves
+concommand.Add("playerscaling_utility", function(ply, cmd, args)
+    local scale = ply:GetInfoNum("playerscaling_clientscale", 1)
+    local dospeed = ply:GetInfo("playerscaling_clientspeed", true)
+    local dojump = ply:GetInfo("playerscaling_clientjump", true)
+    local dolength = ply:GetInfo("playerscaling_clientmanual", false)
+    local length = ply:GetInfoNum("playerscaling_clienttime", 1)
+
+    playerscaling.setscale(ply, scale, dospeed, dojump, dolength and length)
+end, nil, "Set your size multiplier via the sandbox spawnmenu", FCVAR_CHEAT)
 
 -- Player command to multiply their scale
 concommand.Add("playerscalemult", function(ply, cmd, args)
@@ -71,6 +82,12 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
         return "Failed to scale: Invalid player"
     end
 
+    -- Not used internally. Use the hook, returning true with an optional reason if you want to prevent scaling
+    local preventscale, reason = hook.Run("playerscaling_preventscale", ply, scale, dospeed, dojump, length)
+    if preventscale then
+        return reason or "Failed to scale: Hook playerscaling_preventscale returned true"
+    end
+
     -- Interrupt if already scaling
     if playerscaling.lerp[ply] then
         playerscaling.finish(ply, playerscaling.lerp[ply], "interrupted")
@@ -103,7 +120,7 @@ function playerscaling.setscale(ply, scale, dospeed, dojump, length)
     old.scale = old.scale or 1
 
     -- Gets scale and returns if there are no changes
-    scale = math.Clamp(scale or 1, minsize:GetFloat(), maxsize:GetFloat())
+    scale = math.Clamp(tonumber(scale) or 1, minsize:GetFloat(), maxsize:GetFloat())
     if old.scale == scale and old.speed == dospeed and old.jump == dojump and old.view == playerscaling.doview then
         return "Failed to scale: Values unchanged"
     end
@@ -268,6 +285,12 @@ hook.Add("Tick", "playescaling_tickserver", function()
     -- Attempt to scale players
     for ply, info in pairs(playerscaling.lerp) do
         if not IsValid(ply) then
+            continue
+        end
+
+        -- Not used internally. Use the hook, returning true with an optional reason if you want to pause scaling
+        local pausescale = hook.Run("playerscaling_pausescale", ply, info)
+        if pausescale then
             continue
         end
 

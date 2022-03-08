@@ -20,14 +20,19 @@ if SERVER then
     CreateConVar("playerscaling_step", 1, {FCVAR_ARCHIVE}, "Should scaling change player step size?", 0, 1) -- If disabled, players will have disproportionate step sizes up/down
 
     -- Scaling parameters
-    CreateConVar("playerscaling_maxsize", 25, {FCVAR_ARCHIVE}, "Maximum scaling size (Exceeding 25 not recommended)", 1, 50)
-    CreateConVar("playerscaling_minsize", 0.05, {FCVAR_ARCHIVE}, "Minimum scaling size (Setting below 0.05 not recommended)", 0.01, 1)
     CreateConVar("playerscaling_speedlarge", 0.5, {FCVAR_ARCHIVE}, "Upscale speed factor (Higher is faster)", 0, 1)
     CreateConVar("playerscaling_speedsmall", 0.8, {FCVAR_ARCHIVE}, "Downscale speed factor (Higher is faster)", 0, 1)
     CreateConVar("playerscaling_jumplarge", 1, {FCVAR_ARCHIVE}, "Upscale jump factor (Higher is higher jump)", 0, 1)
     CreateConVar("playerscaling_jumpsmall", 0.6, {FCVAR_ARCHIVE}, "Downscale jump factor (Higher is higher jump)", 0, 1)
     CreateConVar("playerscaling_stepsmall", 0.25, {FCVAR_ARCHIVE}, "Minimum downscaled step size", 0, 1)
     CreateConVar("playerscaling_falllarge", 250, {FCVAR_ARCHIVE}, "Upscale fall damage protection (Higher is greater protection)", 0)
+-- ConVars relevant only to the client. They are used in the sandbox spawnmenu utilities command
+else
+    CreateClientConVar("playerscaling_clientscale", 1, true, true, "Target player scale in spawn menu")
+    CreateClientConVar("playerscaling_clientspeed", 1, true, true, "Scale player speed in spawnmenu", 0, 1)
+    CreateClientConVar("playerscaling_clientjump", 1, true, true, "Scale player jump in spawnmenu", 0, 1)
+    CreateClientConVar("playerscaling_clientmanual", 0, true, true, "Manually set scale time in spawnmenu", 0, 1)
+    CreateClientConVar("playerscaling_clienttime", 1, true, true, "Manual scale time in spawn menu")
 end
 
 -- Shared scaling toggles
@@ -35,5 +40,7 @@ CreateConVar("playerscaling_gravity", 1, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Sho
 CreateConVar("playerscaling_credits", 0, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Should addon credits be printed once in client console? (Disabled by default)", 0, 1) -- If enabled, players can see where the addon comes from in console :)
 
 -- Shared scaling parameters
+CreateConVar("playerscaling_maxsize", 10, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Maximum scaling size (Exceeding 25 not recommended)", 1, 50)
+CreateConVar("playerscaling_minsize", 0.05, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Minimum scaling size (Setting below 0.05 not recommended)", 0.01, 1)
 CreateConVar("playerscaling_gravitylarge", 200, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Upscale gravity increase (Higher is stronger)", 0)
 CreateConVar("playerscaling_gravitysmall", 500, {FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Downscale gravity decress (Higher is weaker)", 0)

@@ -24,10 +24,17 @@ Multiply Scale Function: **playerscaling.multiplyscale(\<Player ply\>, \<number 
  - Same arguments with a multiplier instead of a scale
 
 Finished Scaling Hook: **"playerscaling_finish", function(\<Player ply\>, \<table info\>, \<string reason\>)**
- - ply is the player who was scaled
  - info is the table with information of the scaling (see playerscaling.lerp in sv_init.lua)
  - reason is whatever reason the scaling ended for
- - Not used in the code at this point, but you might find it useful if you are implementing the system
+ - Called when scaling ends. Not used internally, but may be useful to a developer using this library
+
+Prevent Scaling Hook: **"playerscaling_preventscale", function(\<Player ply\>, \<number scale\>, \<boolean dospeed\>, \<boolean dojump\>, \<number time\>)**
+ - Called when scaling is about to start. Not used internally, but may be useful to a developer using this library
+ - Return true with an optional reason to prevent scaling from starting
+
+Pause Scaling Hook: **"playerscaling_pausescale", function(\<Player ply\>, \<table info\>)**
+ - Called when scaling is occurring. Not used internally, but may be useful to a developer using this library
+ - Return true with an optional reason to pause scaling for the current tick
 
 ## **Customization:**
 Server ConVars: (Found in sh_init.lua)
